@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "804029606132",
+    "project_id": "fypruntracker",
+    "storage_bucket": "fypruntracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804029606132:android:0d45006a9b87a68ed0d6a1",
+        "android_client_info": {
+          "package_name": "com.example.fypproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRrkKz_0jtF2EtdkGg2f-c4SikFr33rk0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

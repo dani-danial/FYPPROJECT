@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_background"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <ProgressBar
+        android:id="@+id/onboarding_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:max="3"
+        android:progress="1"
+        android:progressTint="@color/neon_blue" />
+
+    <ViewFlipper
+        android:id="@+id/view_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:inAnimation="@android:anim/slide_in_left"
+        android:outAnimation="@android:anim/slide_out_right">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center_vertical" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Usual Distance?" android:textColor="@color/text_white" android:textSize="24sp" android:textStyle="bold" />
+            <RadioGroup android:id="@+id/rg_distance" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="30dp">
+                <RadioButton android:id="@+id/rb_dist_low" android:layout_width="match_parent" android:layout_height="60dp" android:text="Short (Under 5km)" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+                <RadioButton android:id="@+id/rb_dist_med" android:layout_width="match_parent" android:layout_height="60dp" android:text="Medium (5km - 15km)" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+                <RadioButton android:id="@+id/rb_dist_hard" android:layout_width="match_parent" android:layout_height="60dp" android:text="Long (Over 15km)" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center_vertical" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Running Style?" android:textColor="@color/text_white" android:textSize="24sp" android:textStyle="bold" />
+            <RadioGroup android:id="@+id/rg_type" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="30dp">
+                <RadioButton android:id="@+id/rb_type_low" android:layout_width="match_parent" android:layout_height="60dp" android:text="Casual" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+                <RadioButton android:id="@+id/rb_type_med" android:layout_width="match_parent" android:layout_height="60dp" android:text="Training" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+                <RadioButton android:id="@+id/rb_type_hard" android:layout_width="match_parent" android:layout_height="60dp" android:text="Competitive" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center_vertical" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="How many times?" android:textColor="@color/text_white" android:textSize="24sp" android:textStyle="bold" />
+            <RadioGroup android:id="@+id/rg_freq" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="30dp">
+                <RadioButton android:id="@+id/rb_freq_low" android:layout_width="match_parent" android:layout_height="60dp" android:text="1-2 times" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+                <RadioButton android:id="@+id/rb_freq_med" android:layout_width="match_parent" android:layout_height="60dp" android:text="3-4 times" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+                <RadioButton android:id="@+id/rb_freq_hard" android:layout_width="match_parent" android:layout_height="60dp" android:text="5+ times" android:textColor="@color/text_white" android:buttonTint="@color/neon_blue"/>
+            </RadioGroup>
+        </LinearLayout>
+
+    </ViewFlipper>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_back"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:background="@android:color/transparent"
+            android:text="BACK"
+            android:textColor="@color/text_grey"
+            android:visibility="gone" /> <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_next"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_weight="2"
+        android:background="@drawable/gradient_button_bg"
+        android:text="NEXT"
+        android:textColor="@color/text_white"
+        android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

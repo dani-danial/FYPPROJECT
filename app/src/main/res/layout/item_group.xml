@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/card_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_icon"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#333"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_group_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:padding="12dp" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/tv_group_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Group Name"
+            android:textColor="@color/text_white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/card_icon"
+            app:layout_constraintTop_toTopOf="@id/card_icon" />
+
+        <TextView
+            android:id="@+id/tv_group_members"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="0 Runners"
+            android:textColor="@color/text_grey"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/tv_group_name"
+            app:layout_constraintTop_toBottomOf="@id/tv_group_name" />
+
+        <ProgressBar
+            android:id="@+id/pb_group_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:progressDrawable="@android:drawable/progress_horizontal"
+            android:progressTint="@color/neon_blue"
+            android:max="100"
+            android:progress="0"
+            app:layout_constraintStart_toStartOf="@id/tv_group_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_group_members"/>
+
+        <TextView
+            android:id="@+id/tv_group_target"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Target: 0km"
+            android:textColor="@color/neon_blue"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/tv_group_name"
+            app:layout_constraintTop_toBottomOf="@id/pb_group_progress" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_group_target">
+
+            <Button
+                android:id="@+id/btn_view_group"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="View"
+                android:textColor="@color/text_white"
+                android:backgroundTint="@color/neon_blue"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btn_join_group"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Join"
+                android:textColor="@color/text_white"
+                android:backgroundTint="#4CAF50"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
