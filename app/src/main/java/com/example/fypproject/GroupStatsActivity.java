@@ -1,6 +1,8 @@
 package com.example.fypproject;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -9,30 +11,35 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class GroupStatsActivity extends AppCompatActivity {
 
-    private String groupId;
+    private static final String TAG = "GroupStatsActivity";
+    private int groupId;
     private RecyclerView rvStats;
     private ProgressBar pbLoading;
-    private FirebaseFirestore db;
     private List<GroupStatsAdapter.MemberStat> memberStatsList = new ArrayList<>();
-    private int membersProcessed = 0;
+    private GroupStatsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_stats);
 
-        groupId = getIntent().getStringExtra("GROUP_ID");
+        String groupIdStr = getIntent().getStringExtra("GROUP_ID");
+        try {
+            groupId = Integer.parseInt(groupIdStr);
+        } catch (NumberFormatException e) {
+            groupId = -1;
+        }
+        
         String groupName = getIntent().getStringExtra("GROUP_NAME");
 
         TextView tvTitle = findViewById(R.id.tv_stats_title);
@@ -45,60 +52,54 @@ public class GroupStatsActivity extends AppCompatActivity {
         rvStats.setLayoutManager(new LinearLayoutManager(this));
         pbLoading = findViewById(R.id.pb_loading);
 
-        db = FirebaseFirestore.getInstance();
-        fetchGroupMembers();
-    }
-
-    private void fetchGroupMembers() {
-        db.collection("groups").document(groupId).get().addOnSuccessListener(doc -> {
-            if (doc.exists()) {
-                List<String> memberIds = (List<String>) doc.get("members");
-                if (memberIds == null || memberIds.isEmpty()) {
-                    pbLoading.setVisibility(View.GONE);
-                    Toast.makeText(this, "No members found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                processMembers(memberIds);
-            }
-        }).addOnFailureListener(e -> pbLoading.setVisibility(View.GONE));
-    }
-
-    private void processMembers(List<String> memberIds) {
-        int totalMembers = memberIds.size();
-        for (String memberId : memberIds) {
-            GroupStatsAdapter.MemberStat stat = new GroupStatsAdapter.MemberStat();
-            stat.userId = memberId;
-            memberStatsList.add(stat);
-
-            Task<DocumentSnapshot> userTask = db.collection("users").document(memberId).get();
-            Task<QuerySnapshot> runsTask = db.collection("runs").whereEqualTo("userId", memberId).get();
-
-            Tasks.whenAllSuccess(userTask, runsTask).addOnSuccessListener(results -> {
-                DocumentSnapshot userDoc = (DocumentSnapshot) results.get(0);
-                stat.userName = userDoc.getString("name");
-                stat.userImageBase64 = userDoc.getString("imageBase64");
-
-                QuerySnapshot runsSnapshot = (QuerySnapshot) results.get(1);
-                for (DocumentSnapshot runDoc : runsSnapshot.getDocuments()) {
-                    Double dist = runDoc.getDouble("distance_km");
-                    if (dist != null) stat.totalDistance += dist;
-                    stat.totalRuns++;
-                }
-
-                membersProcessed++;
-                if (membersProcessed == totalMembers) displayStats();
-            }).addOnFailureListener(e -> {
-                membersProcessed++;
-                if (membersProcessed == totalMembers) displayStats();
-            });
+        if (groupId == -1) {
+            pbLoading.setVisibility(View.GONE);
+            Toast.makeText(this, "Invalid group ID", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        fetchGroupLeaderboard();
+    }
+
+    private void fetchGroupLeaderboard() {
+        String token = "Bearer " + getSavedToken();
+        pbLoading.setVisibility(View.VISIBLE);
+        rvStats.setVisibility(View.GONE);
+
+        RetrofitClient.getService().getGroupLeaderboard(token, groupId)
+                .enqueue(new Callback<List<GroupStatsAdapter.MemberStat>>() {
+                    @Override
+                    public void onResponse(Call<List<GroupStatsAdapter.MemberStat>> call, Response<List<GroupStatsAdapter.MemberStat>> response) {
+                        if (isFinishing() || isDestroyed()) return;
+                        pbLoading.setVisibility(View.GONE);
+                        if (response.isSuccessful() && response.body() != null) {
+                            memberStatsList.clear();
+                            memberStatsList.addAll(response.body());
+                            displayStats();
+                        } else {
+                            Log.e(TAG, "Failed to load leaderboard. HTTP " + response.code());
+                            Toast.makeText(GroupStatsActivity.this, "Failed to load leaderboard", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<GroupStatsAdapter.MemberStat>> call, Throwable t) {
+                        if (isFinishing() || isDestroyed()) return;
+                        pbLoading.setVisibility(View.GONE);
+                        Log.e(TAG, "Network error fetching leaderboard", t);
+                        Toast.makeText(GroupStatsActivity.this, "Network error loading leaderboard", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void displayStats() {
-        pbLoading.setVisibility(View.GONE);
         rvStats.setVisibility(View.VISIBLE);
-        Collections.sort(memberStatsList);
-        GroupStatsAdapter adapter = new GroupStatsAdapter(memberStatsList);
+        adapter = new GroupStatsAdapter(memberStatsList);
         rvStats.setAdapter(adapter);
+    }
+
+    private String getSavedToken() {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        return prefs.getString("token", "");
     }
 }

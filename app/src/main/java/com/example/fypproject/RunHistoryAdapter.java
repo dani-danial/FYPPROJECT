@@ -11,11 +11,16 @@ import java.util.List;
 
 public class RunHistoryAdapter extends RecyclerView.Adapter<RunHistoryAdapter.RunViewHolder> {
 
-    // CHANGED: List<RunData> instead of QueryDocumentSnapshot
-    private List<RunData> runList;
+    public interface OnRunClickListener {
+        void onRunClick(RunData run);
+    }
 
-    public RunHistoryAdapter(List<RunData> runList) {
+    private List<RunData> runList;
+    private OnRunClickListener clickListener;
+
+    public RunHistoryAdapter(List<RunData> runList, OnRunClickListener clickListener) {
         this.runList = runList;
+        this.clickListener = clickListener;
     }
 
     @NonNull
@@ -40,6 +45,13 @@ public class RunHistoryAdapter extends RecyclerView.Adapter<RunHistoryAdapter.Ru
 
         // 4. Pace
         holder.tvPace.setText(run.getPace() != null ? run.getPace() : "--'--\"");
+
+        // 5. Click Listener
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onRunClick(run);
+            }
+        });
     }
 
     @Override

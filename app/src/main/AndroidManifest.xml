@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
 
@@ -48,18 +49,20 @@
 
         <activity
             android:name=".GroupDetailActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:exported="false" />
 
         <activity
             android:name=".GroupStatsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:exported="false" />
 
         <activity android:name=".UserProfileActivity" />
 
         <activity
             android:name=".ChatActivity"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
+            android:name=".GroupChatActivity"
             android:windowSoftInputMode="adjustResize"/>
 
         <activity android:name=".RecentChatsActivity"/>
@@ -80,6 +83,10 @@
         </service>
 
         <activity android:name=".OnboardingActivity" android:exported="false" />
+        <activity android:name=".PostRunActivity" android:exported="false" />
+        <activity android:name=".PostDetailActivity" android:exported="false" />
+        <activity android:name=".FeedActivity" android:exported="false" />
+        <activity android:name=".ConversationsActivity" android:exported="false" />
 
     </application>
 

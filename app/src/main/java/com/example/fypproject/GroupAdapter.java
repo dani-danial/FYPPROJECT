@@ -31,17 +31,18 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
     private Context context;
     private List<GroupModel> groupList;
     private String currentUserId;
-    private OnJoinClickListener joinListener;
+    private OnGroupInteractionListener interactionListener;
 
-    public interface OnJoinClickListener {
+    public interface OnGroupInteractionListener {
         void onJoinClick(int groupId);
+        void onLeaveClick(int groupId);
     }
 
-    public GroupAdapter(Context context, List<GroupModel> groupList, String currentUserId, OnJoinClickListener listener) {
+    public GroupAdapter(Context context, List<GroupModel> groupList, String currentUserId, OnGroupInteractionListener listener) {
         this.context = context;
         this.groupList = groupList;
         this.currentUserId = currentUserId;
-        this.joinListener = listener;
+        this.interactionListener = listener;
     }
 
     public void updateList(List<GroupModel> newList) {
@@ -67,8 +68,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         holder.tvMembers.setText(group.getMembersCount() + " Runners Joined");
 
         if (group.getTargetKm() > 0) {
-            holder.tvTarget.setText("Goal: " + group.getTargetKm() + " km");
-            holder.pbProgress.setVisibility(View.GONE);
+            holder.tvTarget.setText(String.format(java.util.Locale.getDefault(), "Goal: %.1f / %.1f km", group.getCurrentKm(), group.getTargetKm()));
+            holder.pbProgress.setVisibility(View.VISIBLE);
+            holder.pbProgress.setMax((int) Math.max(group.getTargetKm(), 1));
+            holder.pbProgress.setProgress((int) group.getCurrentKm());
         } else {
             holder.tvTarget.setText("No Target");
             holder.pbProgress.setVisibility(View.GONE);
@@ -112,7 +115,17 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
             context.startActivity(intent);
         });
 
-        holder.btnJoin.setOnClickListener(v -> joinListener.onJoinClick(group.getId()));
+        if (group.isMember()) {
+            holder.btnJoin.setText("Leave");
+            holder.btnJoin.setEnabled(true);
+            holder.btnJoin.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFD32F2F));
+            holder.btnJoin.setOnClickListener(v -> interactionListener.onLeaveClick(group.getId()));
+        } else {
+            holder.btnJoin.setText("Join");
+            holder.btnJoin.setEnabled(true);
+            holder.btnJoin.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF4CAF50));
+            holder.btnJoin.setOnClickListener(v -> interactionListener.onJoinClick(group.getId()));
+        }
     }
 
     @Override

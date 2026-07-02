@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+    RewriteEngine On
+
+    # 1. ALLOW ACCESS to your custom image folders
+    # This prevents the 404 by telling the server NOT to redirect these folders
+    RewriteCond %{REQUEST_URI} ^/app_data/.* [NC,OR]
+    RewriteCond %{REQUEST_URI} ^/uploads/.* [NC]
+    RewriteRule ^ - [L]
+
+    # 2. Redirect Trailing Slashes...
+    RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+    # 3. Handle Front Controller (Laravel Standard)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ public/index.php [L]
+
+    # 4. Redirect everything else to the public folder
+    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+</IfModule>

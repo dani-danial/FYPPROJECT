@@ -1,8 +1,5 @@
 package com.example.fypproject;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,15 +7,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.UserViewHolder> {
 
-    private List<QueryDocumentSnapshot> userList;
+    private List<UserModel> userList;
+    private OnUserClickListener listener;
 
-    public UserSearchAdapter(List<QueryDocumentSnapshot> userList) {
+    public interface OnUserClickListener {
+        void onUserClick(UserModel user);
+    }
+
+    public UserSearchAdapter(List<UserModel> userList, OnUserClickListener listener) {
         this.userList = userList;
+        this.listener = listener;
+    }
+
+    public void updateList(List<UserModel> newList) {
+        this.userList = newList;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -30,23 +38,20 @@ public class UserSearchAdapter extends RecyclerView.Adapter<UserSearchAdapter.Us
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        QueryDocumentSnapshot document = userList.get(position);
+        UserModel user = userList.get(position);
 
-        String name = document.getString("name");
-        String username = document.getString("username"); // Get Username
-        String imageBase64 = document.getString("imageBase64");
+        holder.tvName.setText(user.getName());
+        holder.tvAbout.setText("@" + user.getUsername() + " | " + user.getRunnerTier());
 
-        holder.tvName.setText(name != null ? name : "Unknown");
-        // Show username like "@john123"
-        holder.tvAbout.setText(username != null ? "@" + username : "@unknown");
+        Glide.with(holder.itemView.getContext())
+                .load(user.getProfilePhotoPath())
+                .circleCrop()
+                .placeholder(android.R.drawable.ic_menu_report_image)
+                .into(holder.ivImage);
 
-        if (imageBase64 != null && !imageBase64.isEmpty()) {
-            try {
-                byte[] decodedString = Base64.decode(imageBase64, Base64.DEFAULT);
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                holder.ivImage.setImageBitmap(decodedByte);
-            } catch (Exception e) {}
-        }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onUserClick(user);
+        });
     }
 
     @Override

@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -21,12 +22,17 @@ public class LocationService extends Service implements LocationListener {
 
     private static final String CHANNEL_ID = "LocationServiceChannel";
     private LocationManager locationManager;
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+        if (pm != null) {
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RunTracker::LocationWakeLock");
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -53,6 +59,12 @@ public class LocationService extends Service implements LocationListener {
                 e.printStackTrace();
             }
         }
+
+        // Acquire WakeLock to keep CPU running when screen is off
+        if (wakeLock != null && !wakeLock.isHeld()) {
+            wakeLock.acquire(120 * 60 * 1000L); // 2 hours max timeout
+        }
+
         return START_NOT_STICKY;
     }
 
@@ -78,6 +90,9 @@ public class LocationService extends Service implements LocationListener {
     public void onDestroy() {
         super.onDestroy();
         if (locationManager != null) locationManager.removeUpdates(this);
+        if (wakeLock != null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
     }
 
     @Nullable

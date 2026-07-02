@@ -37,9 +37,16 @@ public class Event {
     @SerializedName("runner_tier")
     private String runnerTier;
 
+    @SerializedName("is_joined")
+    private boolean isJoined;
+
+    @SerializedName("recommendation_status")
+    private String recommendationStatus;
+
     public Event() {}
 
     // --- Getters ---
+    public String getRecommendationStatus() { return recommendationStatus; }
     public int getId() { return id; }
     public String getTitle() { return title; }
     public String getDate() { return date; }
@@ -59,4 +66,5 @@ public class Event {
     public String getStatus() { return status; }
     public String getLogoPath() { return logoPath; }
     public String getRunnerTier() { return runnerTier; }
+    public boolean isJoined() { return isJoined; }
 }

@@ -56,6 +56,88 @@
             android:layout_marginBottom="16dp"/>
 
         <EditText
+            android:id="@+id/et_register_age"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Birthdate"
+            android:focusable="false"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:backgroundTint="#6200EE"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gender"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioGroup
+            android:id="@+id/rg_register_gender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rb_gender_male"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Male"
+                android:textColor="#FFFFFF"/>
+
+            <RadioButton
+                android:id="@+id/rb_gender_female"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Female"
+                android:textColor="#FFFFFF"/>
+
+            <RadioButton
+                android:id="@+id/rb_gender_other"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Other"
+                android:textColor="#FFFFFF"/>
+
+            <RadioButton
+                android:id="@+id/rb_gender_prefer_not"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="Prefer not to say"
+                android:textColor="#FFFFFF"/>
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/et_register_running_goal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Running goal"
+            android:inputType="textCapSentences"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:backgroundTint="#6200EE"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/et_register_emergency_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Emergency Contact Phone"
+            android:inputType="phone"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:backgroundTint="#6200EE"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
             android:id="@+id/et_register_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -22,9 +22,24 @@ import java.util.TimeZone;
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
 
     private List<PostModel> postList;
+    private String currentUserId;
+    private OnPostActionListener listener;
+
+    public interface OnPostActionListener {
+        void onViewPost(PostModel post);
+        void onLikePost(PostModel post, int position);
+        void onCommentPost(PostModel post);
+        void onDeletePost(PostModel post, int position);
+    }
 
     public PostAdapter(List<PostModel> postList) {
         this.postList = postList;
+    }
+
+    public PostAdapter(List<PostModel> postList, String currentUserId, OnPostActionListener listener) {
+        this.postList = postList;
+        this.currentUserId = currentUserId;
+        this.listener = listener;
     }
 
     @NonNull
@@ -65,14 +80,42 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.ivPostImage.setVisibility(View.GONE);
         }
 
-        // Note: Likes and Comments counts can be set here later if you add them to your database
-        holder.btnLike.setText("0 Likes");
-        holder.btnComment.setText("0 Comments");
+        holder.btnLike.setText(post.getLikesCount() + (post.getLikesCount() == 1 ? " Like" : " Likes"));
+        holder.btnComment.setText(post.getCommentsCount() + (post.getCommentsCount() == 1 ? " Comment" : " Comments"));
+        holder.btnLike.setTextColor(holder.itemView.getContext().getColor(post.isLikedByMe() ? android.R.color.holo_red_light : android.R.color.holo_red_dark));
+
+        boolean canDelete = currentUserId != null && post.isOwnedBy(currentUserId);
+        holder.btnEditPost.setVisibility(View.GONE);
+        holder.btnDeletePost.setVisibility(canDelete ? View.VISIBLE : View.GONE);
+
+        holder.btnViewPost.setOnClickListener(v -> {
+            if (listener != null) listener.onViewPost(post);
+        });
+        holder.btnComment.setOnClickListener(v -> {
+            if (listener != null) listener.onCommentPost(post);
+        });
+        holder.btnLike.setOnClickListener(v -> {
+            if (listener != null) listener.onLikePost(post, holder.getAdapterPosition());
+        });
+        holder.btnDeletePost.setOnClickListener(v -> {
+            if (listener != null) listener.onDeletePost(post, holder.getAdapterPosition());
+        });
     }
 
     @Override
     public int getItemCount() {
         return postList.size();
+    }
+
+    public void updatePosts(List<PostModel> posts) {
+        this.postList = posts;
+        notifyDataSetChanged();
+    }
+
+    public void removePostAt(int position) {
+        if (position < 0 || position >= postList.size()) return;
+        postList.remove(position);
+        notifyItemRemoved(position);
     }
 
     private String formatTime(String rawDate) {

@@ -1,125 +1,183 @@
 package com.example.fypproject;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
-    private String chatRoomId;
-    private String targetUserId, targetUserName;
+    private int conversationId;
+    private String targetUserName;
+    private String targetUserPhoto;
+    private boolean targetUserOnline;
     private String currentUserId;
-    private FirebaseFirestore db;
 
     private RecyclerView rvChat;
     private EditText etMessage;
-    private ImageButton btnSend, btnBack; // Added btnBack
-    private TextView tvHeaderName;
+    private ImageButton btnSend, btnBack;
+    private ImageView ivChatAvatar;
+    private TextView tvHeaderName, tvHeaderStatus;
+
     private MessageAdapter adapter;
     private List<Message> messageList;
+
+    // Polling handler to simulate real-time chat without Firebase
+    private Handler pollingHandler = new Handler();
+    private Runnable pollingRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        targetUserId = getIntent().getStringExtra("targetUserId");
-        targetUserName = getIntent().getStringExtra("targetUserName");
-        currentUserId = FirebaseAuth.getInstance().getUid();
-        db = FirebaseFirestore.getInstance();
+        // 1. Get ID from SharedPreferences instead of Firebase
+        currentUserId = getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("userId", "0");
 
-        // Consistent Chat Room ID Generation
-        if (currentUserId.compareTo(targetUserId) < 0) {
-            chatRoomId = currentUserId + "_" + targetUserId;
-        } else {
-            chatRoomId = targetUserId + "_" + currentUserId;
-        }
+        // 2. Get passed data from Intent
+        conversationId = getIntent().getIntExtra("conversationId", -1);
+        targetUserName = getIntent().getStringExtra("targetUserName");
+        targetUserPhoto = getIntent().getStringExtra("targetUserPhoto");
+        targetUserOnline = getIntent().getBooleanExtra("targetUserOnline", false);
 
         initViews();
-        setupChat();
+
+        if (conversationId != -1) {
+            startPolling(); // Start fetching messages every 3 seconds
+        } else {
+            Toast.makeText(this, "Error: Invalid Chat Room", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     private void initViews() {
         rvChat = findViewById(R.id.rv_chat);
         etMessage = findViewById(R.id.et_message_input);
         btnSend = findViewById(R.id.btn_send_message);
-        btnBack = findViewById(R.id.btn_chat_back); // Initialize Back Button
+        btnBack = findViewById(R.id.btn_chat_back);
+        ivChatAvatar = findViewById(R.id.iv_chat_avatar);
         tvHeaderName = findViewById(R.id.tv_chat_header_name);
+        tvHeaderStatus = findViewById(R.id.tv_chat_header_status);
 
-        tvHeaderName.setText(targetUserName);
+        if (targetUserName != null && !targetUserName.isEmpty()) {
+            tvHeaderName.setText(targetUserName);
+        } else {
+            tvHeaderName.setText("Chat");
+        }
+        tvHeaderStatus.setText(targetUserOnline ? "online" : "offline");
+        tvHeaderStatus.setTextColor(getColor(targetUserOnline ? android.R.color.holo_green_light : android.R.color.darker_gray));
+
+        Glide.with(this)
+                .load(targetUserPhoto)
+                .placeholder(android.R.drawable.sym_def_app_icon)
+                .circleCrop()
+                .into(ivChatAvatar);
 
         messageList = new ArrayList<>();
-        adapter = new MessageAdapter(messageList);
+
+        // Ensure your MessageAdapter accepts currentUserId to distinguish sent vs received
+        adapter = new MessageAdapter(messageList, currentUserId, targetUserPhoto);
+
         LinearLayoutManager manager = new LinearLayoutManager(this);
-        manager.setStackFromEnd(true);
+        manager.setStackFromEnd(true); // Push messages from bottom up
         rvChat.setLayoutManager(manager);
         rvChat.setAdapter(adapter);
 
         // Listeners
         btnSend.setOnClickListener(v -> sendMessage());
-        btnBack.setOnClickListener(v -> finish()); // Go back to previous screen
+        btnBack.setOnClickListener(v -> finish());
     }
 
-    private void setupChat() {
-        db.collection("chats").document(chatRoomId).collection("messages")
-                .orderBy("timestamp", Query.Direction.ASCENDING)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) return;
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            if (dc.getType() == DocumentChange.Type.ADDED) {
-                                Message msg = dc.getDocument().toObject(Message.class);
-                                messageList.add(msg);
-                                adapter.notifyItemInserted(messageList.size() - 1);
-                                rvChat.scrollToPosition(messageList.size() - 1);
-                            }
-                        }
+    private void fetchMessages() {
+        String token = "Bearer " + getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("token", "");
+
+        RetrofitClient.getService().getMessages(token, conversationId).enqueue(new Callback<List<Message>>() {
+            @Override
+            public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    messageList.clear();
+                    messageList.addAll(response.body());
+                    adapter.notifyDataSetChanged();
+
+                    // Auto-scroll to the latest message
+                    if (!messageList.isEmpty()) {
+                        rvChat.scrollToPosition(messageList.size() - 1);
                     }
-                });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Message>> call, Throwable t) {
+                Log.e("ChatActivity", "Error fetching messages: " + t.getMessage());
+            }
+        });
     }
 
     private void sendMessage() {
         String text = etMessage.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 
+        // Clear input field immediately for better user experience
         etMessage.setText("");
 
-        Map<String, Object> messageData = new HashMap<>();
-        messageData.put("senderId", currentUserId);
-        messageData.put("text", text);
-        messageData.put("timestamp", FieldValue.serverTimestamp());
+        String token = "Bearer " + getSharedPreferences("UserPrefs", MODE_PRIVATE).getString("token", "");
 
-        // 1. Add to message history
-        db.collection("chats").document(chatRoomId).collection("messages").add(messageData);
+        // FIX: Pass the text directly into the constructor to match your SendMessageRequest class
+        SendMessageRequest request = new SendMessageRequest(text);
 
-        // 2. Update the Chat Metadata
-        Map<String, Object> chatMeta = new HashMap<>();
-        chatMeta.put("lastMessage", text);
-        chatMeta.put("timestamp", FieldValue.serverTimestamp());
+        RetrofitClient.getService().sendMessage(token, conversationId, request).enqueue(new Callback<Message>() {
+            @Override
+            public void onResponse(Call<Message> call, Response<Message> response) {
+                if (response.isSuccessful()) {
+                    // Refresh the chat immediately after sending
+                    fetchMessages();
+                } else {
+                    Toast.makeText(ChatActivity.this, "Failed to send message", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-        // --- NEW: Save WHO sent this message ---
-        chatMeta.put("lastSenderId", currentUserId);
+            @Override
+            public void onFailure(Call<Message> call, Throwable t) {
+                Toast.makeText(ChatActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-        chatMeta.put("users", Arrays.asList(currentUserId, targetUserId));
+    private void startPolling() {
+        pollingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                fetchMessages();
+                pollingHandler.postDelayed(this, 3000); // Poll every 3 seconds
+            }
+        };
+        pollingHandler.post(pollingRunnable);
+    }
 
-        db.collection("chats").document(chatRoomId).set(chatMeta, com.google.firebase.firestore.SetOptions.merge());
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Stop polling to prevent memory leaks and unnecessary API calls when user leaves chat
+        if (pollingHandler != null && pollingRunnable != null) {
+            pollingHandler.removeCallbacks(pollingRunnable);
+        }
     }
 }

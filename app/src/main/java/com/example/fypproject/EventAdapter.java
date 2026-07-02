@@ -112,6 +112,20 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.btnJoin.setOnClickListener(v -> {
             if (listener != null) listener.onJoinClick(event);
         });
+
+        // 5. Recommendation Badge
+        if (event.getRecommendationStatus() != null) {
+            holder.cvBadge.setVisibility(View.VISIBLE);
+            if ("challenge".equalsIgnoreCase(event.getRecommendationStatus())) {
+                holder.tvBadge.setText("CHALLENGE ⚡");
+                holder.cvBadge.setCardBackgroundColor(0xFFE65100); // Dark Orange
+            } else {
+                holder.tvBadge.setText("RECOMMENDED");
+                holder.cvBadge.setCardBackgroundColor(0xFF2E7D32); // Dark Green
+            }
+        } else {
+            holder.cvBadge.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -120,9 +134,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvSubtitle, tvParticipants, btnView;
+        TextView tvTitle, tvSubtitle, tvParticipants, btnView, tvBadge;
         Button btnJoin;
         ImageView ivLogo;
+        androidx.cardview.widget.CardView cvBadge;
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -132,6 +147,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             ivLogo = itemView.findViewById(R.id.iv_event_logo);
             btnJoin = itemView.findViewById(R.id.btn_join_event);
             btnView = itemView.findViewById(R.id.btn_view_details);
+            cvBadge = itemView.findViewById(R.id.cv_event_badge);
+            tvBadge = itemView.findViewById(R.id.tv_event_badge);
         }
     }
 }

@@ -29,6 +29,15 @@ public class RunData {
     @SerializedName("date")
     private String date;
 
+    @SerializedName("route_path")
+    private String routePath; // Serialized JSON coordinate array
+
+    @SerializedName("share_to_feed")
+    private boolean shareToFeed;
+
+    @SerializedName("ai_evaluation")
+    private String aiEvaluation;
+
     public RunData() {
         // Required empty constructor for Retrofit/Gson
     }
@@ -97,5 +106,29 @@ public class RunData {
 
     public String getDate() {
         return (date != null) ? date : "No Date";
+    }
+
+    public void setRoutePath(String routePath) {
+        this.routePath = routePath;
+    }
+
+    public String getRoutePath() {
+        return routePath;
+    }
+
+    public void setShareToFeed(boolean shareToFeed) {
+        this.shareToFeed = shareToFeed;
+    }
+
+    public boolean isShareToFeed() {
+        return shareToFeed;
+    }
+
+    public String getAiEvaluation() {
+        return aiEvaluation;
+    }
+
+    public void setAiEvaluation(String aiEvaluation) {
+        this.aiEvaluation = aiEvaluation;
     }
 }

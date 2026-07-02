@@ -13,6 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import java.util.Locale;
 
+import com.bumptech.glide.Glide;
+import com.google.gson.annotations.SerializedName;
+
 public class GroupStatsAdapter extends RecyclerView.Adapter<GroupStatsAdapter.StatViewHolder> {
 
     private List<MemberStat> statsList;
@@ -37,12 +40,20 @@ public class GroupStatsAdapter extends RecyclerView.Adapter<GroupStatsAdapter.St
         holder.tvRuns.setText(stat.totalRuns + " runs");
 
         if (stat.userImageBase64 != null && !stat.userImageBase64.isEmpty()) {
-            try {
-                byte[] decodedString = Base64.decode(stat.userImageBase64, Base64.DEFAULT);
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                holder.ivUser.setImageBitmap(decodedByte);
-            } catch (Exception e) {
-                holder.ivUser.setImageResource(android.R.drawable.sym_def_app_icon);
+            if (stat.userImageBase64.startsWith("http") || stat.userImageBase64.contains("serve-image")) {
+                Glide.with(holder.itemView.getContext())
+                        .load(stat.userImageBase64)
+                        .placeholder(android.R.drawable.sym_def_app_icon)
+                        .error(android.R.drawable.sym_def_app_icon)
+                        .into(holder.ivUser);
+            } else {
+                try {
+                    byte[] decodedString = Base64.decode(stat.userImageBase64, Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    holder.ivUser.setImageBitmap(decodedByte);
+                } catch (Exception e) {
+                    holder.ivUser.setImageResource(android.R.drawable.sym_def_app_icon);
+                }
             }
         } else {
             holder.ivUser.setImageResource(android.R.drawable.sym_def_app_icon);
@@ -69,9 +80,20 @@ public class GroupStatsAdapter extends RecyclerView.Adapter<GroupStatsAdapter.St
     }
 
     public static class MemberStat implements Comparable<MemberStat> {
-        String userId, userName, userImageBase64;
-        double totalDistance = 0;
-        int totalRuns = 0;
+        @SerializedName("user_id")
+        public String userId;
+
+        @SerializedName("user_name")
+        public String userName;
+
+        @SerializedName("user_image_base64")
+        public String userImageBase64;
+
+        @SerializedName("total_distance")
+        public double totalDistance = 0;
+
+        @SerializedName("total_runs")
+        public int totalRuns = 0;
 
         @Override
         public int compareTo(MemberStat other) {

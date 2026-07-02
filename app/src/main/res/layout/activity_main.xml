@@ -5,15 +5,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black_background">
+    android:background="@drawable/bg_dark_gradient"
+    android:fitsSystemWindows="true">
 
+    <!-- 1. HOMEPAGE TAB -->
     <ScrollView
         android:id="@+id/layout_home"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="visible"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintBottom_toTopOf="@id/custom_bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -21,122 +23,352 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="24dp">
+            android:padding="0dp">
 
+            <!-- Top bar (fits edge-to-edge with standard padding) -->
             <LinearLayout
                 android:id="@+id/top_bar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="64dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="40dp"
+                android:paddingHorizontal="16dp"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <EditText
-                    android:id="@+id/et_search"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/gradient_button_bg"
-                    android:backgroundTint="@color/card_surface"
-                    android:hint="Search Runners..."
-                    android:textColorHint="@color/text_grey"
-                    android:textColor="@color/text_white"
-                    android:paddingStart="16dp"
-                    android:drawableStart="@android:drawable/ic_menu_search"
-                    android:drawableTint="@color/text_white"/>
-
                 <ImageView
-                    android:id="@+id/btn_home_messages"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
-                    android:padding="4dp"
+                    android:src="@android:drawable/ic_menu_sort_by_size"
+                    android:padding="8dp"
+                    app:tint="@color/neon_glow" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="RunTracker"
+                    android:textColor="@color/dim_purple"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <ImageButton
+                    android:id="@+id/btn_home_messages"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@android:drawable/sym_action_chat"
-                    app:tint="@color/neon_blue"
-                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                    android:contentDescription="Messages"
+                    android:padding="8dp"
+                    app:tint="@color/neon_glow" />
+
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_search_results"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/top_bar"/>
-
+            <!-- Homepage content with standard layout padding -->
             <LinearLayout
                 android:id="@+id/home_content_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:layout_constraintTop_toBottomOf="@id/rv_search_results">
+                android:paddingHorizontal="24dp"
+                android:paddingBottom="24dp"
+                app:layout_constraintTop_toBottomOf="@id/top_bar"
+                app:layout_constraintBottom_toBottomOf="parent">
 
+                <!-- Center Greetings -->
                 <TextView
-                    android:id="@+id/tv_welcome"
+                    android:id="@+id/tv_home_greeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Let's Run!"
-                    android:textColor="@color/text_white"
-                    android:textSize="28sp"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Good morning!"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="18sp"
+                    android:layout_marginTop="20dp" />
+
+                <TextView
+                    android:id="@+id/tv_home_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="You're on a wave of productivity!"
+                    android:textColor="@color/white"
+                    android:textSize="26sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="24dp"/>
+                    android:gravity="center"
+                    android:layout_marginTop="8dp" />
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/btn_open_events"
+                <!-- Search input bar -->
+                <LinearLayout
+                    android:id="@+id/search_bar_container"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
+                    android:layout_height="50dp"
                     android:layout_marginTop="24dp"
-                    app:cardBackgroundColor="@color/card_surface"
-                    app:cardCornerRadius="16dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="All Running Events →"
-                        android:textColor="@color/text_white"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </androidx.cardview.widget.CardView>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_glass_card"
+                    android:paddingHorizontal="16dp">
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/cv_create_post_trigger"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardBackgroundColor="@color/card_surface"
-                    app:cardCornerRadius="16dp">
-                    <LinearLayout
+                    <EditText
+                        android:id="@+id/et_search"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@android:drawable/ic_menu_camera"
-                            app:tint="@color/neon_blue"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:text="Share your run today..."
-                            android:textColor="@color/text_grey"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:hint="Search Runners..."
+                        android:textColorHint="@color/dim_purple"
+                        android:textColor="@color/white"
+                        android:drawableStart="@android:drawable/ic_menu_search"
+                        android:drawablePadding="12dp"
+                        android:drawableTint="@color/neon_glow"
+                        android:inputType="text"
+                        android:imeOptions="actionSearch" />
+                </LinearLayout>
 
-                <RelativeLayout
+                <!-- Search Results -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_search_results"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp">
-                    <TextView
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    android:background="@drawable/bg_glass_card"
+                    android:elevation="10dp" />
+
+                <!-- Horizontal Action Pills -->
+                <HorizontalScrollView
+                    android:id="@+id/horizontal_actions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Friend Activity"
-                        android:textColor="@color/text_white"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cv_create_post_trigger"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardBackgroundColor="@android:color/transparent"
+                            app:cardElevation="0dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:text="Write a post"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:background="@drawable/bg_pill_button"
+                                android:paddingHorizontal="16dp" />
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/btn_open_events"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardBackgroundColor="@android:color/transparent"
+                            app:cardElevation="0dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:text="Browse Events"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:background="@drawable/bg_pill_button"
+                                android:paddingHorizontal="16dp" />
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardBackgroundColor="@android:color/transparent"
+                            app:cardElevation="0dp">
+                            <TextView
+                                android:id="@+id/btn_home_ai_coach"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:text="Ask AI Coach"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:background="@drawable/bg_pill_button"
+                                android:paddingHorizontal="16dp" />
+                        </androidx.cardview.widget.CardView>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Activity section -->
+                <TextView
+                    android:id="@+id/tv_home_activity_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Your Activity"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="28dp" />
+
+                <HorizontalScrollView
+                    android:id="@+id/horizontal_stats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+
+                        <!-- Total Distance Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="140dp"
+                            android:layout_height="120dp"
+                            android:layout_marginEnd="12dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardBackgroundColor="@color/card_surface"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#338A5CF5"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Distance"
+                                    android:textColor="@color/neon_glow"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:id="@+id/tv_home_total_distance"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0.00 km"
+                                    android:textColor="@color/white"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="8dp" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Cumulative"
+                                    android:textColor="@color/dim_purple"
+                                    android:textSize="10sp"
+                                    android:layout_marginTop="8dp" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Total Runs Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="140dp"
+                            android:layout_height="120dp"
+                            android:layout_marginEnd="12dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardBackgroundColor="@color/card_surface"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#338A5CF5"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Runs"
+                                    android:textColor="@color/neon_glow"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:id="@+id/tv_home_total_runs"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/white"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="8dp" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Runs log"
+                                    android:textColor="@color/dim_purple"
+                                    android:textSize="10sp"
+                                    android:layout_marginTop="8dp" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Runner Tier Card -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="150dp"
+                            android:layout_height="120dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardBackgroundColor="@color/card_surface"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#338A5CF5"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Runner Tier"
+                                    android:textColor="@color/neon_glow"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:id="@+id/tv_home_runner_tier"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="Beginner"
+                                    android:textColor="@color/white"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="8dp"
+                                    android:ellipsize="end"
+                                    android:maxLines="1" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Current level"
+                                    android:textColor="@color/dim_purple"
+                                    android:textSize="10sp"
+                                    android:layout_marginTop="8dp" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Friend Activity Feed -->
+                <RelativeLayout
+                    android:id="@+id/layout_feed_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp">
+                    <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:text="Friend Activity"
+                          android:textColor="@color/white"
+                          android:textSize="18sp"
+                          android:textStyle="bold" />
                     <TextView
                         android:id="@+id/tv_view_more_posts"
                         android:layout_width="wrap_content"
@@ -144,7 +376,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:text="View More"
-                        android:textColor="@color/neon_blue"
+                        android:textColor="@color/neon_glow"
                         android:textStyle="bold"
                         android:textSize="14sp" />
                 </RelativeLayout>
@@ -156,26 +388,17 @@
                     android:layout_marginTop="12dp"
                     android:nestedScrollingEnabled="false" />
 
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btn_sos"
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:layout_marginTop="20dp"
-                    android:text="SOS EMERGENCY"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="#800000"/>
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- 2. RUN RECORD TAB -->
     <RelativeLayout
         android:id="@+id/layout_record"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintBottom_toTopOf="@id/custom_bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -197,9 +420,7 @@
             app:backgroundTint="@color/card_surface"
             app:tint="@color/text_white"
             app:fabSize="mini"
-            app:elevation="6dp"
-            app:borderWidth="1dp"
-            app:strokeColor="@color/text_white"/>
+            app:elevation="6dp" />
 
         <LinearLayout
             android:id="@+id/bottom_controls_container"
@@ -216,8 +437,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="● GPS ACQUIRED"
-                    android:textColor="@color/text_white"
+                    android:text="● GPS ACTIVE"
+                    android:textColor="@color/white"
                     android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -255,13 +476,13 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="110dp"
+                android:layout_height="90dp"
                 android:background="@color/black_background">
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnStartRun"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_centerInParent="true"
                     android:background="@drawable/circle_button_coco"
                     android:text="▶"
@@ -271,13 +492,313 @@
         </LinearLayout>
     </RelativeLayout>
 
+    <!-- 3. SOS TAB [NEW] -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_sos"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/custom_bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/map_sos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/sos_top_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="#CC0F081D"
+            app:cardElevation="6dp"
+            app:layout_constraintTop_toTopOf="parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚨 EMERGENCY MONITORING"
+                    android:textColor="#EF4444"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_sos_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GPS status active. Live coordinates acquired."
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_sos_find_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@android:drawable/ic_menu_mylocation"
+            app:backgroundTint="@color/card_surface"
+            app:tint="@color/text_white"
+            app:fabSize="mini"
+            app:layout_constraintBottom_toTopOf="@id/sos_bottom_panel"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/sos_bottom_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="24dp"
+            app:cardBackgroundColor="#F20F081D"
+            app:cardElevation="10dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:gravity="center_horizontal">
+
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="4dp"
+                    android:background="#3A2C5D"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select Emergency Type"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:scrollbars="none">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cv_sos_injury"
+                            android:layout_width="110dp"
+                            android:layout_height="70dp"
+                            android:layout_marginEnd="10dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardBackgroundColor="#2A1A4E">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Injury 🤕" android:textColor="@color/white" android:textSize="12sp" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cv_sos_medical"
+                            android:layout_width="110dp"
+                            android:layout_height="70dp"
+                            android:layout_marginEnd="10dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardBackgroundColor="#2A1A4E">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Medical 🫀" android:textColor="@color/white" android:textSize="12sp" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cv_sos_safety"
+                            android:layout_width="110dp"
+                            android:layout_height="70dp"
+                            android:layout_marginEnd="10dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardBackgroundColor="#2A1A4E">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Safety 🛡️" android:textColor="@color/white" android:textSize="12sp" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+                        <androidx.cardview.widget.CardView
+                            android:id="@+id/cv_sos_animal"
+                            android:layout_width="110dp"
+                            android:layout_height="70dp"
+                            app:cardCornerRadius="12dp"
+                            app:cardBackgroundColor="#2A1A4E">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Animal 🐕" android:textColor="@color/white" android:textSize="12sp" />
+                            </LinearLayout>
+                        </androidx.cardview.widget.CardView>
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <Button
+                    android:id="@+id/btn_sos_trigger"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="#EF4444"
+                    android:text="🚨 DISPATCH SOS REPORT"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 4. RUNNING GROUPS TAB -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_group"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/custom_bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/group_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Running Groups"
+                    android:textColor="@color/text_white"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btn_search_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:backgroundTint="@color/card_surface"
+                    app:tint="@color/text_white"
+                    app:fabSize="mini" />
+            </RelativeLayout>
+
+            <EditText
+                android:id="@+id/et_group_search"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                android:background="@drawable/card_background_dark"
+                android:hint="Search group name..."
+                android:textColorHint="@color/text_grey"
+                android:textColor="@color/text_white"
+                android:paddingStart="16dp" />
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/group_header">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="16dp"
+                android:paddingTop="16dp"
+                android:paddingRight="16dp"
+                android:paddingBottom="88dp">
+
+                <!-- Joined Groups Section -->
+                <TextView
+                    android:id="@+id/tv_joined_groups_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="My Groups"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_joined_groups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone" />
+
+                <!-- Available Groups Section -->
+                <TextView
+                    android:id="@+id/tv_available_groups_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Available Groups"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_available_groups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_create_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:src="@android:drawable/ic_input_add"
+            app:backgroundTint="@color/neon_glow"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 5. PROFILE TAB -->
     <ScrollView
         android:id="@+id/layout_profile"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintBottom_toTopOf="@id/custom_bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -289,207 +810,430 @@
             android:padding="24dp"
             android:gravity="center_horizontal">
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="40dp"
-                app:cardCornerRadius="60dp">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_profile_container"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:layout_marginTop="32dp"
+                app:cardCornerRadius="55dp"
+                app:cardBackgroundColor="@color/card_surface"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/neon_glow"
+                app:strokeWidth="2dp">
                 <ImageView
                     android:id="@+id/iv_profile_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_camera"/>
-            </androidx.cardview.widget.CardView>
-
-            <TextView android:id="@+id/tv_display_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_white" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="16dp"/>
-            <TextView android:id="@+id/tv_display_username" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/neon_blue"/>
+                    android:src="@android:drawable/ic_menu_camera" />
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
-                android:id="@+id/tv_runner_tier"
+                android:id="@+id/tv_change_photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Level: Not Assessed"
-                android:textColor="@color/neon_blue"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="8dp"
+                android:text="Change Photo"
+                android:textColor="@color/neon_glow"
+                android:visibility="gone" />
 
-            <TextView android:id="@+id/tv_display_about" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_grey" android:layout_marginTop="8dp"/>
+            <!-- View Mode Container -->
+            <LinearLayout
+                android:id="@+id/ll_view_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/tv_display_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="16dp"
+                    tools:text="Name" />
+
+                <TextView
+                    android:id="@+id/tv_display_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="14sp"
+                    tools:text="@username" />
+
+                <TextView
+                    android:id="@+id/tv_runner_tier"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:text="Runner Level: Beginner" />
+
+                <TextView
+                    android:id="@+id/tv_display_about"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_white"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:padding="12dp"
+                    android:background="@drawable/card_background_dark"
+                    tools:text="Bio details" />
+
+                <!-- Grid stats -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="20dp"
+                    android:weightSum="3">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                        <TextView android:id="@+id/tv_profile_total_distance" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_white" android:textSize="18sp" android:textStyle="bold" android:text="0.0 km"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_grey" android:textSize="12sp" android:text="Distance"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                        <TextView android:id="@+id/tv_profile_total_runs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_white" android:textSize="18sp" android:textStyle="bold" android:text="0"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_grey" android:textSize="12sp" android:text="Runs"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                        <TextView android:id="@+id/tv_view_pace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_white" android:textSize="18sp" android:textStyle="bold" android:text="0:00"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_grey" android:textSize="12sp" android:text="Base Pace"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="20dp"
+                    android:weightSum="2">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="@drawable/card_background_dark" android:padding="12dp" android:layout_marginEnd="6dp">
+                        <TextView android:id="@+id/tv_view_weight" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_white" android:textSize="16sp" android:textStyle="bold" android:text="0.0 kg"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_grey" android:textSize="10sp" android:text="Weight"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="@drawable/card_background_dark" android:padding="12dp" android:layout_marginStart="6dp">
+                        <TextView android:id="@+id/tv_view_height" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_white" android:textSize="16sp" android:textStyle="bold" android:text="0.0 cm"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_grey" android:textSize="10sp" android:text="Height"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_ai_coach"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_pill_button"
+                    android:text="ASK AI COACH"
+                    android:textColor="@color/white"
+                    android:textStyle="bold" />
+
+                <!-- Run History -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MY RUN HISTORY"
+                    android:textColor="@color/text_grey"
+                    android:textSize="12sp"
+                    android:layout_marginTop="32dp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_run_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+
+            <!-- Edit Mode Container (Hidden by default) -->
+            <LinearLayout
+                android:id="@+id/ll_edit_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Full Name:"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                <EditText android:id="@+id/et_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Full Name" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Username:"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                <EditText android:id="@+id/et_username" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Username" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email Address:"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                <EditText android:id="@+id/et_email" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Email" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Emergency Contact Number:"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                <EditText android:id="@+id/et_phone" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Emergency Contact Phone" android:textColor="@color/white" android:backgroundTint="@color/neon_glow" android:inputType="phone"/>
+                
+                <LinearLayout 
+                    android:layout_width="match_parent" 
+                    android:layout_height="wrap_content" 
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Weight (kg):"
+                        android:textColor="@color/neon_glow"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Height (cm):"
+                        android:textColor="@color/neon_glow"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+                
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                    <EditText android:id="@+id/et_weight" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="Weight (kg)" android:inputType="numberDecimal" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+                    <EditText android:id="@+id/et_height" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:hint="Height (cm)" android:inputType="numberDecimal" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Base Pace (min/km):"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                <EditText android:id="@+id/et_pace" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Base Pace" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bio / Description:"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+                <EditText android:id="@+id/et_about" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Bio" android:textColor="@color/white" android:backgroundTint="@color/neon_glow"/>
+
+            </LinearLayout>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_edit_profile"
-                android:layout_width="200dp"
-                android:layout_height="50dp"
-                android:text="Edit Profile"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
                 android:layout_marginTop="24dp"
-                android:textColor="@color/text_white"
-                android:textStyle="bold"
-                android:background="@drawable/gradient_button_bg"
-                android:backgroundTint="@color/card_surface"/>
+                android:background="@drawable/circle_button_coco"
+                android:text="EDIT PROFILE"
+                android:textColor="@color/white" />
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btn_ai_coach"
-                android:layout_width="200dp"
-                android:layout_height="50dp"
-                android:text="Ask AI Coach ✨"
-                android:layout_marginTop="12dp"
-                android:textColor="@color/text_white"
-                android:textStyle="bold"
-                android:background="@drawable/gradient_button_bg"
-                android:backgroundTint="@color/neon_blue"/>
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btn_assess_runner"
-                android:layout_width="200dp"
-                android:layout_height="50dp"
-                android:text="Assess My Level"
-                android:layout_marginTop="12dp"
-                android:textColor="@color/text_white"
-                android:textStyle="bold"
-                android:background="@drawable/gradient_button_bg"
-                android:backgroundTint="#2E7D32"/> <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="32dp" android:weightSum="2">
-            <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_marginEnd="8dp" app:cardBackgroundColor="@color/card_surface" app:cardCornerRadius="20dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
-                    <TextView android:id="@+id/tv_profile_total_distance" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.00" android:textColor="@color/text_white" android:textSize="22sp" android:textStyle="bold"/>
-                    <TextView android:text="Total km" android:textColor="@color/text_grey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_marginStart="8dp" app:cardBackgroundColor="@color/card_surface" app:cardCornerRadius="20dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
-                    <TextView android:id="@+id/tv_profile_total_runs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/text_white" android:textSize="22sp" android:textStyle="bold"/>
-                    <TextView android:text="Runs" android:textColor="@color/text_grey" android:textSize="12sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:weightSum="2">
-                <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_marginEnd="8dp" app:cardBackgroundColor="@color/card_surface" app:cardCornerRadius="20dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
-                        <TextView android:id="@+id/tv_view_weight" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.0 kg" android:textColor="@color/text_white" android:textSize="20sp" android:textStyle="bold"/>
-                        <TextView android:text="Weight" android:textColor="@color/text_grey" android:textSize="11sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-                <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="100dp" android:layout_weight="1" android:layout_marginStart="8dp" app:cardBackgroundColor="@color/card_surface" app:cardCornerRadius="20dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
-                        <TextView android:id="@+id/tv_view_height" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 cm" android:textColor="@color/text_white" android:textSize="20sp" android:textStyle="bold"/>
-                        <TextView android:text="Height" android:textColor="@color/text_grey" android:textSize="11sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-            </LinearLayout>
-
-            <androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="70dp" android:layout_marginTop="12dp" app:cardBackgroundColor="@color/card_surface" app:cardCornerRadius="16dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="horizontal">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Base Pace: " android:textColor="@color/text_grey" android:textSize="12sp" />
-                    <TextView android:id="@+id/tv_view_pace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0:00" android:textColor="@color/text_white" android:textSize="18sp" android:textStyle="bold" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_run_history" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:nestedScrollingEnabled="false" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCOUNT ACTIONS"
+                android:textColor="@color/text_grey"
+                android:textSize="12sp"
+                android:layout_marginTop="32dp"
+                android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_logout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="Logout"
-                android:textColor="#FF4444"
-                android:textStyle="bold"
-                android:background="@android:color/transparent"/>
+                android:textColor="@color/white"
+                android:backgroundTint="#2A2A2A"/>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_delete_account"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:text="DELETE ACCOUNT"
-                android:textColor="@color/text_grey"
-                android:textSize="12sp"
-                android:background="@android:color/transparent"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Delete Account"
+                android:textColor="#FF4444"
+                android:backgroundTint="#2A2A2A"/>
+
         </LinearLayout>
     </ScrollView>
 
+    <!-- 6. CUSTOM BOTTOM NAVIGATION -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layout_group"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        android:id="@+id/custom_bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:background="#0A0614"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:id="@+id/tv_group_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Running Groups"
-            android:textColor="@color/text_white"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_margin="24dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <EditText
-            android:id="@+id/et_group_search"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_margin="24dp"
-            android:background="@drawable/gradient_button_bg"
-            android:backgroundTint="@color/card_surface"
-            android:hint="Search Groups..."
-            android:textColorHint="@color/text_grey"
-            android:textColor="@color/text_white"
-            android:paddingStart="16dp"
-            android:drawableStart="@android:drawable/ic_menu_search"
-            android:drawableTint="@color/text_white"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/tv_group_title"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_groups"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="16dp"
-            android:padding="24dp"
-            app:layout_constraintTop_toBottomOf="@id/et_group_search"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="5">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btn_search_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="16dp"
-            android:src="@android:drawable/ic_menu_search"
-            app:backgroundTint="@color/card_surface"
-            app:tint="@color/text_white"
-            app:layout_constraintBottom_toTopOf="@+id/btn_create_group"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <!-- Home Tab Button -->
+            <LinearLayout
+                android:id="@+id/btn_nav_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:id="@+id/iv_nav_home"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/neon_glow" />
+                <TextView
+                    android:id="@+id/tv_nav_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Home"
+                    android:textColor="@color/neon_glow"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btn_create_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="24dp"
-            android:src="@android:drawable/ic_input_add"
-            app:backgroundTint="@color/neon_blue"
-            app:tint="@color/card_surface"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <!-- Run Tab Button -->
+            <LinearLayout
+                android:id="@+id/btn_nav_run"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:id="@+id/iv_nav_run"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_run"
+                    app:tint="@color/dim_purple" />
+                <TextView
+                    android:id="@+id/tv_nav_run"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Run"
+                    android:textColor="@color/dim_purple"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Placeholder for overlapping center SOS button -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <!-- Group Tab Button -->
+            <LinearLayout
+                android:id="@+id/btn_nav_group"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:id="@+id/iv_nav_group"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_group"
+                    app:tint="@color/dim_purple" />
+                <TextView
+                    android:id="@+id/tv_nav_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Group"
+                    android:textColor="@color/dim_purple"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Profile/You Tab Button -->
+            <LinearLayout
+                android:id="@+id/btn_nav_profile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:id="@+id/iv_nav_profile"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_profile"
+                    app:tint="@color/dim_purple" />
+                <TextView
+                    android:id="@+id/tv_nav_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="You"
+                    android:textColor="@color/dim_purple"
+                    android:textSize="10sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/card_surface"
-        app:itemIconTint="@color/text_white"
-        app:itemTextColor="@color/text_white"
-        app:menu="@menu/bottom_nav_menu"
-        app:layout_constraintBottom_toBottomOf="parent" />
+    <!-- Overlapping Central Glowing SOS Button (floats above navigation) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/btn_sos"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="30dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/sos_glowing_red"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_sos"
+            android:scaleType="center"
+            android:padding="12dp"
+            app:tint="@color/white" />
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

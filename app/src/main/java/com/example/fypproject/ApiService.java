@@ -1,12 +1,13 @@
 package com.example.fypproject;
 
 import java.util.List;
+import java.util.Map;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody; // 🛠️ Added for deleteGroup response
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.DELETE; // 🛠️ Added for deleteGroup
+import retrofit2.http.DELETE;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -16,12 +17,21 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.PUT;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
-
-    @GET("api/posts/feed") // Replace with your actual server endpoint
+    @GET("api/posts/feed")
     Call<List<PostModel>> getHomeFeed(@Header("Authorization") String token);
+
+    @Headers("Accept: application/json")
+    @GET("api/posts/{id}")
+    Call<PostModel> getPost(
+            @Header("Authorization") String token,
+            @Path("id") int postId
+    );
+
     // ===========================================
     // 1. AUTHENTICATION
     // ===========================================
@@ -36,16 +46,39 @@ public interface ApiService {
 
 
     // ===========================================
-    // 2. PROFILE FEATURES (🍫 Full Web-to-Mobile Sync)
+    // 2. PROFILE & USERS
     // ===========================================
 
     @Headers("Accept: application/json")
     @GET("api/profile")
     Call<UserModel> getUserProfile(@Header("Authorization") String token);
 
-    /**
-     * Standard Profile Update (No Image)
-     */
+    @Headers("Accept: application/json")
+    @GET("api/users/search")
+    Call<List<UserModel>> searchUsers(
+            @Header("Authorization") String token,
+            @Query("query") String query
+    );
+
+    @Headers("Accept: application/json")
+    @GET("api/users/{id}")
+    Call<UserModel> getUserProfileById(
+            @Header("Authorization") String token,
+            @Path("id") String userId
+    );
+
+    @Headers("Accept: application/json")
+    @POST("api/users/{id}/follow")
+    Call<ResponseBody> toggleFollow(
+            @Header("Authorization") String token,
+            @Path("id") String userId
+    );
+
+    // New: Fetch the list of users the current runner is following
+    @Headers("Accept: application/json")
+    @GET("api/following")
+    Call<List<UserModel>> getFollowing(@Header("Authorization") String token);
+
     @FormUrlEncoded
     @Headers("Accept: application/json")
     @POST("api/profile")
@@ -61,9 +94,6 @@ public interface ApiService {
             @Field("base_pace_min_km") String pace
     );
 
-    /**
-     * Full Profile Update with Image Sync
-     */
     @Multipart
     @Headers("Accept: application/json")
     @POST("api/profile")
@@ -101,6 +131,13 @@ public interface ApiService {
             @Path("id") int groupId
     );
 
+    @Headers("Accept: application/json")
+    @GET("api/groups/{id}/leaderboard")
+    Call<List<GroupStatsAdapter.MemberStat>> getGroupLeaderboard(
+            @Header("Authorization") String token,
+            @Path("id") int groupId
+    );
+
     @Multipart
     @Headers("Accept: application/json")
     @POST("api/groups")
@@ -123,6 +160,13 @@ public interface ApiService {
             @Body JoinRequest request
     );
 
+    @POST("api/groups/leave")
+    @Headers("Accept: application/json")
+    Call<JoinResponse> leaveGroup(
+            @Header("Authorization") String token,
+            @Body JoinRequest request
+    );
+
     @Multipart
     @Headers("Accept: application/json")
     @POST("api/groups/{id}")
@@ -137,10 +181,6 @@ public interface ApiService {
             @Part MultipartBody.Part banner
     );
 
-    /**
-     * 🛠️ DELETE GROUP (🍫 Added for Deletion Sync)
-     * This matches the destroy method in your Laravel GroupController
-     */
     @Headers("Accept: application/json")
     @DELETE("api/groups/{id}")
     Call<ResponseBody> deleteGroup(
@@ -167,7 +207,30 @@ public interface ApiService {
             @Header("Authorization") String token,
             @Part("group_id") RequestBody groupId,
             @Part("content") RequestBody content,
-            @Part MultipartBody.Part image
+            @Part MultipartBody.Part media
+    );
+
+    @Headers("Accept: application/json")
+    @DELETE("api/posts/{id}")
+    Call<ResponseBody> deletePost(
+            @Header("Authorization") String token,
+            @Path("id") int postId
+    );
+
+    @Headers("Accept: application/json")
+    @POST("api/posts/{id}/like")
+    Call<PostInteractionResponse> togglePostLike(
+            @Header("Authorization") String token,
+            @Path("id") int postId
+    );
+
+    @FormUrlEncoded
+    @Headers("Accept: application/json")
+    @POST("api/posts/{id}/comments")
+    Call<CommentModel> addPostComment(
+            @Header("Authorization") String token,
+            @Path("id") int postId,
+            @Field("comment") String comment
     );
 
 
@@ -186,11 +249,23 @@ public interface ApiService {
     @GET("api/runs")
     Call<List<RunData>> getRunHistory(@Header("Authorization") String token);
 
+    @Multipart
     @Headers("Accept: application/json")
     @POST("api/runs")
-    Call<RunData> saveRun(
+    Call<SaveRunResponse> saveRun(
             @Header("Authorization") String token,
-            @Body RunData runData
+            @Part("distance_km") RequestBody distanceKm,
+            @Part("duration_seconds") RequestBody durationSeconds,
+            @Part("average_pace") RequestBody averagePace,
+            @Part("route_path") RequestBody routePath,
+            @Part("share_to_feed") RequestBody shareToFeed,
+            @Part MultipartBody.Part image
+    );
+
+    @Headers("Accept: application/json")
+    @GET("api/clear-coach-cache")
+    Call<ResponseBody> clearCoachCache(
+            @Header("Authorization") String token
     );
 
 
@@ -207,15 +282,59 @@ public interface ApiService {
     Call<JoinResponse> joinEvent(
             @Header("Authorization") String token,
             @Body EventJoinRequest request
-
     );
-    @Headers("Accept: application/json") // 🛠️ CRITICAL: Forces Laravel to treat this as an API call
-    @POST("api/classify-runner") // Kept "api/" as per your preference
+
+    @Headers("Accept: application/json")
+    @POST("api/classify-runner")
     Call<CategoryResponse> classifyRunner(
             @Header("Authorization") String token,
             @Body PreferenceRequest request
     );
 
+    // ===========================================
+    // 7. CHAT FEATURES
+    // ===========================================
 
+    @Headers("Accept: application/json")
+    @POST("api/chat/start/{userId}")
+    Call<ConversationModel> startConversation(
+            @Header("Authorization") String token,
+            @Path("userId") int userId
+    );
 
+    @Headers("Accept: application/json")
+    @GET("api/conversations/{id}/messages")
+    Call<List<Message>> getMessages(
+            @Header("Authorization") String token,
+            @Path("id") int conversationId
+    );
+
+    @Headers("Accept: application/json")
+    @POST("api/conversations/{id}/messages")
+    Call<Message> sendMessage(
+            @Header("Authorization") String token,
+            @Path("id") int conversationId,
+            @Body SendMessageRequest request
+    );
+
+    @Headers("Accept: application/json")
+    @GET("api/conversations")
+    Call<List<ConversationModel>> getConversations(
+            @Header("Authorization") String token
+    );
+
+    @Headers("Accept: application/json")
+    @GET("api/groups/{id}/messages")
+    Call<List<Message>> getGroupMessages(
+            @Header("Authorization") String token,
+            @Path("id") int groupId
+    );
+
+    @Headers("Accept: application/json")
+    @POST("api/groups/{id}/messages")
+    Call<Message> sendGroupMessage(
+            @Header("Authorization") String token,
+            @Path("id") int groupId,
+            @Body SendMessageRequest request
+    );
 }

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_conversation"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="#1E1E1E"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:paddingHorizontal="14dp">
+
+        <FrameLayout
+            android:id="@+id/avatar_frame"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_conversation_avatar"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:scaleType="centerCrop" />
+
+            <View
+                android:id="@+id/view_online_dot"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="end|bottom"
+                android:background="@drawable/circle_button_blue"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_conversation_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="Conversation"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tv_conversation_time"
+            app:layout_constraintStart_toEndOf="@id/avatar_frame"
+            app:layout_constraintTop_toTopOf="@id/avatar_frame" />
+
+        <TextView
+            android:id="@+id/tv_conversation_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#8B8B6B"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_conversation_name" />
+
+        <TextView
+            android:id="@+id/tv_conversation_last_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="Tap to start chatting"
+            android:textColor="#B0B0A0"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="@id/tv_conversation_name"
+            app:layout_constraintStart_toStartOf="@id/tv_conversation_name"
+            app:layout_constraintTop_toBottomOf="@id/tv_conversation_name" />
+
+        <TextView
+            android:id="@+id/tv_conversation_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="offline"
+            android:textColor="#777777"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/tv_conversation_name"
+            app:layout_constraintTop_toBottomOf="@id/tv_conversation_last_message" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

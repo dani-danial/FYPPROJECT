@@ -1,29 +1,32 @@
 package com.example.fypproject;
 
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Base64;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UserProfileActivity extends AppCompatActivity {
 
     private String targetUserId;
-    private String currentUserId;
-    private FirebaseFirestore db;
-
     private ImageView ivProfile, btnBack;
     private TextView tvName, tvUsername, tvFollowers, tvFollowing, tvAbout;
-    private Button btnFollow, btnMessage; // Added btnMessage
+    private Button btnFollow, btnMessage;
     private boolean isFollowing = false;
+    private UserModel targetUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,23 +34,37 @@ public class UserProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_profile);
 
         targetUserId = getIntent().getStringExtra("targetUserId");
-        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        db = FirebaseFirestore.getInstance();
 
         initViews();
         loadUserProfile();
-        checkFollowStatus();
 
         btnFollow.setOnClickListener(v -> toggleFollow());
         btnBack.setOnClickListener(v -> finish());
 
-        // NEW: Message Button Logic
+        // Message Button Logic: Start or get a conversation via Laravel
         btnMessage.setOnClickListener(v -> {
-            Intent intent = new Intent(UserProfileActivity.this, ChatActivity.class);
-            intent.putExtra("targetUserId", targetUserId);
-            // Pass the name so the Chat Screen header shows "Chat with Haziq" etc.
-            intent.putExtra("targetUserName", tvName.getText().toString());
-            startActivity(intent);
+            String token = "Bearer " + getToken();
+            RetrofitClient.getService().startConversation(token, Integer.parseInt(targetUserId)).enqueue(new Callback<ConversationModel>() {
+                @Override
+                public void onResponse(Call<ConversationModel> call, Response<ConversationModel> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Intent intent = new Intent(UserProfileActivity.this, ChatActivity.class);
+                        intent.putExtra("conversationId", response.body().getId());
+                        intent.putExtra("targetUserId", targetUserId);
+                        intent.putExtra("targetUserName", targetUser != null ? targetUser.getName() : tvName.getText().toString());
+                        intent.putExtra("targetUserPhoto", targetUser != null ? targetUser.getProfilePhotoPath() : null);
+                        intent.putExtra("targetUserOnline", targetUser != null && targetUser.isOnline());
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(UserProfileActivity.this, "Failed to start chat", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ConversationModel> call, Throwable t) {
+                    Toast.makeText(UserProfileActivity.this, "Network Error", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
@@ -60,66 +77,73 @@ public class UserProfileActivity extends AppCompatActivity {
         tvFollowing = findViewById(R.id.tv_other_following);
 
         btnFollow = findViewById(R.id.btn_follow_user);
-        btnMessage = findViewById(R.id.btn_message_user); // Initialize Button
+        btnMessage = findViewById(R.id.btn_message_user);
         btnBack = findViewById(R.id.btn_back);
     }
 
     private void loadUserProfile() {
-        db.collection("users").document(targetUserId).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        tvName.setText(doc.getString("name"));
-                        tvUsername.setText("@" + doc.getString("username"));
-                        tvAbout.setText(doc.getString("about"));
-
-                        String base64 = doc.getString("imageBase64");
-                        if (base64 != null && !base64.isEmpty()) {
-                            try {
-                                byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
-                                Bitmap bmp = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-                                ivProfile.setImageBitmap(bmp);
-                            } catch (Exception e) {}
-                        }
-                    }
-                });
-
-        db.collection("users").document(targetUserId).collection("followers").get()
-                .addOnSuccessListener(s -> tvFollowers.setText(String.valueOf(s.size())));
-        db.collection("users").document(targetUserId).collection("following").get()
-                .addOnSuccessListener(s -> tvFollowing.setText(String.valueOf(s.size())));
-    }
-
-    private void checkFollowStatus() {
-        db.collection("users").document(targetUserId)
-                .collection("followers").document(currentUserId)
-                .get().addOnSuccessListener(doc -> {
-                    isFollowing = doc.exists();
+        String token = "Bearer " + getToken();
+        RetrofitClient.getService().getUserProfileById(token, targetUserId).enqueue(new Callback<UserModel>() {
+            @Override
+            public void onResponse(Call<UserModel> call, Response<UserModel> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserModel user = response.body();
+                    targetUser = user;
+                    tvName.setText(user.getName());
+                    tvUsername.setText("@" + user.getUsername());
+                    tvAbout.setText(user.getAboutMe());
+                    tvFollowers.setText(String.valueOf(user.getFollowersCount()));
+                    tvFollowing.setText(String.valueOf(user.getFollowingCount()));
+                    isFollowing = user.isFollowing();
                     updateFollowButton();
-                });
+
+                    if (user.getProfilePhotoPath() != null) {
+                        Glide.with(UserProfileActivity.this)
+                                .load(user.getProfilePhotoPath())
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                .circleCrop()
+                                .into(ivProfile);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserModel> call, Throwable t) {
+                Toast.makeText(UserProfileActivity.this, "Error loading profile", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void toggleFollow() {
-        if (isFollowing) {
-            // Unfollow
-            db.collection("users").document(targetUserId).collection("followers").document(currentUserId).delete();
-            db.collection("users").document(currentUserId).collection("following").document(targetUserId).delete();
-            isFollowing = false;
-        } else {
-            // Follow
-            db.collection("users").document(targetUserId).collection("followers").document(currentUserId).set(new Object());
-            db.collection("users").document(currentUserId).collection("following").document(targetUserId).set(new Object());
-            isFollowing = true;
-        }
-        updateFollowButton();
+        String token = "Bearer " + getToken();
+        RetrofitClient.getService().toggleFollow(token, targetUserId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    isFollowing = !isFollowing;
+                    updateFollowButton();
+                    loadUserProfile(); // Refresh counts
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(UserProfileActivity.this, "Action failed", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateFollowButton() {
         if (isFollowing) {
             btnFollow.setText("Following");
-            btnFollow.setBackgroundColor(0xFF555555); // Dark Grey
+            btnFollow.setBackgroundColor(Color.parseColor("#555555"));
         } else {
             btnFollow.setText("Follow");
-            btnFollow.setBackgroundColor(0xFF2196F3); // Blue
+            btnFollow.setBackgroundColor(Color.parseColor("#2196F3"));
         }
+    }
+
+    private String getToken() {
+        return getSharedPreferences("UserPrefs", Context.MODE_PRIVATE).getString("token", "");
     }
 }

@@ -3,16 +3,42 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="start"
-    android:padding="8dp">
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="4dp">
 
-    <TextView
-        android:id="@+id/tv_message_received"
+    <ImageView
+        android:id="@+id/iv_received_avatar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom"
+        android:layout_marginEnd="6dp"
+        android:scaleType="centerCrop" />
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_message_received"
-        android:maxWidth="280dp"
-        android:padding="12dp"
-        android:text="Hi!"
-        android:textColor="#000000"
-        android:textSize="16sp" />
+        android:maxWidth="260dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/tv_message_received"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hi!"
+            android:textColor="#111111"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tv_message_received_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"
+            android:textColor="#666666"
+            android:textSize="10sp" />
+    </LinearLayout>
 </LinearLayout>

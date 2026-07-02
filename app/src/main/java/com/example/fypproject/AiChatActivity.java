@@ -42,15 +42,24 @@ public class AiChatActivity extends AppCompatActivity {
 
         btnSend.setOnClickListener(v -> {
             String question = etQuery.getText().toString().trim();
-            if (!question.isEmpty()) {
-                tvResponse.append("\n\n🧑‍💻 You: " + question);
-                tvResponse.append("\n\n🤖 Coach: Thinking...");
-                etQuery.setText("");
-                scrollToBottom();
-
-                callCoachAPI(question);
-            }
+            sendQuestion(question);
         });
+
+        findViewById(R.id.pill_5k).setOnClickListener(v -> sendQuestion("How do I start training for a 5K run?"));
+        findViewById(R.id.pill_diet).setOnClickListener(v -> sendQuestion("What should I eat before a long run?"));
+        findViewById(R.id.pill_pain).setOnClickListener(v -> sendQuestion("How can I prevent runner's knee?"));
+        findViewById(R.id.pill_recovery).setOnClickListener(v -> sendQuestion("What is a good post-run recovery routine?"));
+    }
+
+    private void sendQuestion(String question) {
+        if (!question.isEmpty()) {
+            tvResponse.append("\n\n🧑‍💻 You: " + question);
+            tvResponse.append("\n\n🤖 Coach: Thinking...");
+            etQuery.setText("");
+            scrollToBottom();
+
+            callCoachAPI(question);
+        }
     }
 
     private void callCoachAPI(String question) {

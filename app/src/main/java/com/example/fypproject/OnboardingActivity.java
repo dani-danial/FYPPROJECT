@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -23,8 +24,9 @@ public class OnboardingActivity extends AppCompatActivity {
     private ViewFlipper viewFlipper;
     private Button btnNext, btnBack;
     private ProgressBar progressBar;
-    private RadioGroup rgDist, rgType, rgFreq;
+    private RadioGroup rgDist, rgType, rgFreq, rgExperience, rgPace, rgWeeklyDistance, rgGoal, rgRecovery, rgEvents, rgInjury;
     private int currentPage = 0;
+    private static final int LAST_PAGE = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +42,17 @@ public class OnboardingActivity extends AppCompatActivity {
         rgDist = findViewById(R.id.rg_distance);
         rgType = findViewById(R.id.rg_type);
         rgFreq = findViewById(R.id.rg_freq);
+        rgExperience = findViewById(R.id.rg_experience);
+        rgPace = findViewById(R.id.rg_pace);
+        rgWeeklyDistance = findViewById(R.id.rg_weekly_distance);
+        rgGoal = findViewById(R.id.rg_goal);
+        rgRecovery = findViewById(R.id.rg_recovery);
+        rgEvents = findViewById(R.id.rg_events);
+        rgInjury = findViewById(R.id.rg_injury);
 
         // --- NEXT BUTTON LOGIC ---
         btnNext.setOnClickListener(v -> {
-            if (currentPage < 2) {
+            if (currentPage < LAST_PAGE) {
                 if (isCurrentPageAnswered()) {
                     currentPage++;
                     viewFlipper.showNext();
@@ -69,21 +78,32 @@ public class OnboardingActivity extends AppCompatActivity {
     private void updateUI() {
         progressBar.setProgress(currentPage + 1);
         btnBack.setVisibility(currentPage == 0 ? View.GONE : View.VISIBLE);
-        btnNext.setText(currentPage == 2 ? "FINISH" : "NEXT");
+        btnNext.setText(currentPage == LAST_PAGE ? "FINISH" : "NEXT");
     }
 
     private boolean isCurrentPageAnswered() {
         if (currentPage == 0) return rgDist.getCheckedRadioButtonId() != -1;
         if (currentPage == 1) return rgType.getCheckedRadioButtonId() != -1;
-        return rgFreq.getCheckedRadioButtonId() != -1;
+        if (currentPage == 2) return rgFreq.getCheckedRadioButtonId() != -1;
+        if (currentPage == 3) return rgExperience.getCheckedRadioButtonId() != -1;
+        if (currentPage == 4) return rgPace.getCheckedRadioButtonId() != -1;
+        if (currentPage == 5) return rgWeeklyDistance.getCheckedRadioButtonId() != -1;
+        if (currentPage == 6) return rgGoal.getCheckedRadioButtonId() != -1;
+        if (currentPage == 7) return rgRecovery.getCheckedRadioButtonId() != -1;
+        return rgEvents.getCheckedRadioButtonId() != -1 && rgInjury.getCheckedRadioButtonId() != -1;
     }
 
     private void calculateAndSubmit() {
         int d = getPoints(rgDist);
         int t = getPoints(rgType);
         int f = getPoints(rgFreq);
+        int experience = getPoints(rgExperience);
+        int pace = getPoints(rgPace);
+        int weeklyDistance = getPoints(rgWeeklyDistance);
+        int recovery = getPoints(rgRecovery);
+        int events = getPoints(rgEvents);
 
-        if (d == 0 || t == 0 || f == 0) {
+        if (d == 0 || t == 0 || f == 0 || experience == 0 || pace == 0 || weeklyDistance == 0 || recovery == 0 || events == 0 || rgGoal.getCheckedRadioButtonId() == -1 || rgInjury.getCheckedRadioButtonId() == -1) {
             Toast.makeText(this, "Please answer all questions!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -108,6 +128,19 @@ public class OnboardingActivity extends AppCompatActivity {
         Log.d("AUTH_DEBUG", "Auth Header: " + authHeader);
 
         PreferenceRequest request = new PreferenceRequest(d, t, f);
+        request.setExperienceScore(experience);
+        request.setPaceScore(pace);
+        request.setWeeklyDistanceScore(weeklyDistance);
+        request.setRecoveryScore(recovery);
+        request.setEventScore(events);
+        request.setGoalType(getSelectedText(rgGoal));
+        request.setInjuryHistory(getInjuryCode());
+        int age = prefs.getInt("age", 0);
+        if (age > 0) request.setAge(age);
+        request.setGender(prefs.getString("gender", null));
+        if (prefs.getString("running_goal", null) != null && getSelectedText(rgGoal).isEmpty()) {
+            request.setRunningGoal(prefs.getString("running_goal", null));
+        }
 
         // Call Service
         RetrofitClient.getService().classifyRunner(authHeader, request).enqueue(new Callback<CategoryResponse>() {
@@ -160,5 +193,19 @@ public class OnboardingActivity extends AppCompatActivity {
         if (id == -1) return 0;
         View radioButton = rg.findViewById(id);
         return rg.indexOfChild(radioButton) + 1;
+    }
+
+    private String getSelectedText(RadioGroup rg) {
+        int id = rg.getCheckedRadioButtonId();
+        if (id == -1) return "";
+        RadioButton radioButton = rg.findViewById(id);
+        return radioButton != null ? radioButton.getText().toString() : "";
+    }
+
+    private String getInjuryCode() {
+        int points = getPoints(rgInjury);
+        if (points == 2) return "minor";
+        if (points == 3) return "recovering";
+        return "none";
     }
 }

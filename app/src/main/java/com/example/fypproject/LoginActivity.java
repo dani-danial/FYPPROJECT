@@ -33,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
         if (savedToken != null) {
             Intent intent;
             // 🆕 If they logged in before but never finished onboarding, send them back to it
-            if (savedTier == null || savedTier.isEmpty()) {
+            if (needsRunnerAssessment(savedTier)) {
                 intent = new Intent(LoginActivity.this, OnboardingActivity.class);
             } else {
                 intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -91,6 +91,9 @@ public class LoginActivity extends AppCompatActivity {
                         editor.putInt("user_id", realUserId);
                         editor.putString("userId", String.valueOf(realUserId));
                         editor.putString("name", user.getName());
+                        editor.putInt("age", user.getAge());
+                        editor.putString("gender", user.getGender());
+                        editor.putString("running_goal", user.getRunningGoal());
 
                         // 🆕 Save the tier to prefs so we know if they are "Fresh" or not
                         editor.putString("runner_tier", user.getRunnerTier());
@@ -101,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     // 🆕 ONBOARDING GATEKEEPER LOGIC
                     Intent intent;
-                    if (user.getRunnerTier() == null || user.getRunnerTier().isEmpty()) {
+                    if (needsRunnerAssessment(user.getRunnerTier())) {
                         // Fresh account -> Go to Assessment screens
                         intent = new Intent(LoginActivity.this, OnboardingActivity.class);
                     } else {
@@ -122,5 +125,14 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(LoginActivity.this, "Server Connection Failed", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean needsRunnerAssessment(String tier) {
+        if (tier == null || tier.trim().isEmpty()) return true;
+
+        String normalizedTier = tier.trim();
+        return normalizedTier.equalsIgnoreCase("LOW")
+                || normalizedTier.equalsIgnoreCase("MEDIUM")
+                || normalizedTier.equalsIgnoreCase("HARD");
     }
 }

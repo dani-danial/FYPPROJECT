@@ -44,6 +44,8 @@ import retrofit2.Response;
 
 public class GroupDetailActivity extends AppCompatActivity {
 
+    private static final String TAG = "GroupDetailActivity";
+
     private int groupId;
     private int currentUserId;
     private GroupModel currentGroup;
@@ -57,7 +59,7 @@ public class GroupDetailActivity extends AppCompatActivity {
     private Button btnDeleteGroup; // 🛠️ Added for deletion
 
     private PostAdapter postAdapter;
-    private LinearLayout btnShare, btnOverview, btnStats;
+    private LinearLayout btnShare, btnOverview, btnStats, btnChat;
 
     // Image Picker Config
     private String imageTypeToUpload = ""; // "icon" or "banner"
@@ -126,11 +128,21 @@ public class GroupDetailActivity extends AppCompatActivity {
         btnShare = findViewById(R.id.btn_action_share);
         btnOverview = findViewById(R.id.btn_action_overview);
         btnStats = findViewById(R.id.btn_action_stats);
+        btnChat = findViewById(R.id.btn_action_chat);
 
         rvFeed = findViewById(R.id.rv_group_feed);
         rvFeed.setLayoutManager(new LinearLayoutManager(this));
 
         btnBack.setOnClickListener(v -> finish());
+
+        btnChat.setOnClickListener(v -> {
+            if (currentGroup == null) return;
+            Intent intent = new Intent(this, GroupChatActivity.class);
+            intent.putExtra("groupId", groupId);
+            intent.putExtra("groupName", currentGroup.getName());
+            intent.putExtra("groupIcon", currentGroup.getIconUrl());
+            startActivity(intent);
+        });
 
         btnShare.setOnClickListener(v -> {
             if (currentGroup == null) return;
@@ -146,6 +158,14 @@ public class GroupDetailActivity extends AppCompatActivity {
                     .setTitle("Group Overview")
                     .setMessage(currentGroup.getDescription() + "\n\nLocation: " + (currentGroup.getLocation() != null ? currentGroup.getLocation() : "Global"))
                     .setPositiveButton("Close", null).show();
+        });
+
+        btnStats.setOnClickListener(v -> {
+            if (currentGroup == null) return;
+            Intent intent = new Intent(this, GroupStatsActivity.class);
+            intent.putExtra("GROUP_ID", String.valueOf(groupId));
+            intent.putExtra("GROUP_NAME", currentGroup.getName());
+            startActivity(intent);
         });
 
         btnEditTarget.setOnClickListener(v -> showEditTargetDialog());
@@ -166,41 +186,59 @@ public class GroupDetailActivity extends AppCompatActivity {
         RetrofitClient.getService().getGroupDetails(token, groupId).enqueue(new Callback<GroupModel>() {
             @Override
             public void onResponse(Call<GroupModel> call, Response<GroupModel> response) {
+                if (isFinishing() || isDestroyed()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     currentGroup = response.body();
                     displayData(currentGroup);
+                } else {
+                    Log.e(TAG, "Could not load group " + groupId + ". HTTP " + response.code());
+                    Toast.makeText(GroupDetailActivity.this, "Could not load group: " + response.code(), Toast.LENGTH_SHORT).show();
+                    finish();
                 }
             }
-            @Override public void onFailure(Call<GroupModel> call, Throwable t) {}
+            @Override public void onFailure(Call<GroupModel> call, Throwable t) {
+                if (isFinishing() || isDestroyed()) return;
+                Log.e(TAG, "Network error loading group " + groupId, t);
+                Toast.makeText(GroupDetailActivity.this, "Network error loading group", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         });
     }
 
     private void displayData(GroupModel group) {
-        tvName.setText(group.getName());
-        tvDesc.setText(group.getDescription());
+        if (isFinishing() || isDestroyed()) return;
+        tvName.setText(safeText(group.getName(), "Unnamed group"));
+        tvDesc.setText(group.getDescription() != null && !group.getDescription().isEmpty() ? group.getDescription() : "No description yet");
         tvType.setText("Running • " + group.getMembersCount() + " Members");
 
-        if (group.getIconUrl() != null) {
+        if (hasText(group.getIconUrl())) {
             Glide.with(this).load(group.getIconUrl())
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .placeholder(android.R.drawable.ic_menu_myplaces)
+                    .error(android.R.drawable.ic_menu_myplaces)
                     .into(ivIcon);
+        } else {
+            ivIcon.setImageResource(android.R.drawable.ic_menu_myplaces);
         }
 
-        if (group.getBannerUrl() != null) {
+        if (hasText(group.getBannerUrl())) {
             Glide.with(this).load(group.getBannerUrl())
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .centerCrop()
                     .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
                     .into(ivHeader);
+        } else {
+            ivHeader.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
-        double target = group.getTargetKm();
-        tvProgress.setText("0 / " + target + " km");
-        pbTarget.setMax((int) target);
-        pbTarget.setProgress(0);
+        double target = Math.max(group.getTargetKm(), 0);
+        double current = Math.max(group.getCurrentKm(), 0);
+        tvProgress.setText(String.format(java.util.Locale.getDefault(), "%.1f / %.1f km", current, target));
+        pbTarget.setMax((int) Math.max(target, 1));
+        pbTarget.setProgress((int) current);
 
         int visibility = (currentUserId != -1 && currentUserId == group.getCreatorId()) ? View.VISIBLE : View.GONE;
         btnEditBanner.setVisibility(visibility);
@@ -314,12 +352,64 @@ public class GroupDetailActivity extends AppCompatActivity {
         RetrofitClient.getService().getGroupPosts(token, groupId).enqueue(new Callback<List<PostModel>>() {
             @Override
             public void onResponse(Call<List<PostModel>> call, Response<List<PostModel>> response) {
+                if (isFinishing() || isDestroyed()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    postAdapter = new PostAdapter(response.body());
-                    rvFeed.setAdapter(postAdapter);
+                    try {
+                        postAdapter = new PostAdapter(response.body(), String.valueOf(currentUserId), new PostAdapter.OnPostActionListener() {
+                            @Override
+                            public void onViewPost(PostModel post) {
+                                if (post == null || post.getId() <= 0) return;
+                                Intent intent = new Intent(GroupDetailActivity.this, PostDetailActivity.class);
+                                intent.putExtra("post_id", post.getId());
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onLikePost(PostModel post, int position) {
+                                if (post == null || post.getId() <= 0 || position == RecyclerView.NO_POSITION) return;
+
+                                RetrofitClient.getService().togglePostLike(token, post.getId()).enqueue(new Callback<PostInteractionResponse>() {
+                                    @Override
+                                    public void onResponse(Call<PostInteractionResponse> call, Response<PostInteractionResponse> response) {
+                                        if (isFinishing() || isDestroyed()) return;
+                                        if (response.isSuccessful() && response.body() != null && postAdapter != null) {
+                                            post.setLikedByMe(response.body().isLiked());
+                                            post.setLikesCount(response.body().getCount());
+                                            postAdapter.notifyItemChanged(position);
+                                        }
+                                    }
+
+                                    @Override public void onFailure(Call<PostInteractionResponse> call, Throwable t) {
+                                        Log.e(TAG, "Failed to like group post " + post.getId(), t);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCommentPost(PostModel post) {
+                                onViewPost(post);
+                            }
+
+                            @Override
+                            public void onDeletePost(PostModel post, int position) {
+                                Toast.makeText(GroupDetailActivity.this, "Delete posts from the full feed", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        rvFeed.setAdapter(postAdapter);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Could not render group posts for group " + groupId, e);
+                        rvFeed.setAdapter(new PostAdapter(new java.util.ArrayList<>(), String.valueOf(currentUserId), null));
+                    }
+                } else {
+                    Log.e(TAG, "Could not load group posts for group " + groupId + ". HTTP " + response.code());
+                    Toast.makeText(GroupDetailActivity.this, "Could not load group posts: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override public void onFailure(Call<List<PostModel>> call, Throwable t) {}
+            @Override public void onFailure(Call<List<PostModel>> call, Throwable t) {
+                if (isFinishing() || isDestroyed()) return;
+                Log.e(TAG, "Network error loading group posts for group " + groupId, t);
+                Toast.makeText(GroupDetailActivity.this, "Network error loading group posts", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -338,5 +428,13 @@ public class GroupDetailActivity extends AppCompatActivity {
             outputStream.close();
             return file;
         } catch (Exception e) { return null; }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
+    private String safeText(String value, String fallback) {
+        return hasText(value) ? value : fallback;
     }
 }
